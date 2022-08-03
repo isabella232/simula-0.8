@@ -1,12 +1,12 @@
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
-    pbr::MaterialPipeline,
+    pbr::{MaterialPipeline, MaterialPipelineKey},
     prelude::*,
     reflect::TypeUuid,
     render::{
         mesh::{Indices, Mesh, MeshVertexBufferLayout},
         render_asset::{PrepareAssetError, RenderAsset},
-        render_resource::{Shader, *},
+        render_resource::{*},
         renderer::RenderDevice,
     },
 };
@@ -97,7 +97,7 @@ impl From<Voxel> for Box {
 pub struct VoxelsMesh {
     positions: Vec<[f32; 3]>,
     normals: Vec<[f32; 3]>,
-    colors: Vec<u32>,
+    colors: Vec<[f32; 4]>,
     indices: Vec<u32>,
 }
 
@@ -139,35 +139,35 @@ impl From<Box> for VoxelsMesh {
         #[rustfmt::skip]
         let vertices = &[
             // front
-            ([sp.min_x, sp.min_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.min_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.max_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.max_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_u32()),
+            ([sp.min_x, sp.min_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.min_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.max_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.max_y, sp.max_z], [0., 0., -1.0], sp.color.as_rgba_f32().into()),
             // back
-            ([sp.min_x, sp.max_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.max_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.min_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.min_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_u32()),
+            ([sp.min_x, sp.max_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.max_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.min_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.min_y, sp.min_z], [0., 0., 1.0],  sp.color.as_rgba_f32().into()),
             // right
-            ([sp.max_x, sp.min_y, sp.min_z], [1.0, 0., 0.],  sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.max_y, sp.min_z], [1.0, 0., 0.],  sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.max_y, sp.max_z], [1.0, 0., 0.],  sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.min_y, sp.max_z], [1.0, 0., 0.],  sp.color.as_rgba_u32()),
+            ([sp.max_x, sp.min_y, sp.min_z], [1.0, 0., 0.],  sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.max_y, sp.min_z], [1.0, 0., 0.],  sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.max_y, sp.max_z], [1.0, 0., 0.],  sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.min_y, sp.max_z], [1.0, 0., 0.],  sp.color.as_rgba_f32().into()),
             // left
-            ([sp.min_x, sp.min_y, sp.max_z], [-1.0, 0., 0.], sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.max_y, sp.max_z], [-1.0, 0., 0.], sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.max_y, sp.min_z], [-1.0, 0., 0.], sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.min_y, sp.min_z], [-1.0, 0., 0.], sp.color.as_rgba_u32()),
+            ([sp.min_x, sp.min_y, sp.max_z], [-1.0, 0., 0.], sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.max_y, sp.max_z], [-1.0, 0., 0.], sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.max_y, sp.min_z], [-1.0, 0., 0.], sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.min_y, sp.min_z], [-1.0, 0., 0.], sp.color.as_rgba_f32().into()),
             // up
-            ([sp.max_x, sp.max_y, sp.min_z], [0., 1.0, 0.],  sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.max_y, sp.min_z], [0., 1.0, 0.],  sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.max_y, sp.max_z], [0., 1.0, 0.],  sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.max_y, sp.max_z], [0., 1.0, 0.],  sp.color.as_rgba_u32()),
+            ([sp.max_x, sp.max_y, sp.min_z], [0., 1.0, 0.],  sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.max_y, sp.min_z], [0., 1.0, 0.],  sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.max_y, sp.max_z], [0., 1.0, 0.],  sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.max_y, sp.max_z], [0., 1.0, 0.],  sp.color.as_rgba_f32().into()),
             // bottom
-            ([sp.max_x, sp.min_y, sp.max_z], [0., -1.0, 0.], sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.min_y, sp.max_z], [0., -1.0, 0.], sp.color.as_rgba_u32()),
-            ([sp.min_x, sp.min_y, sp.min_z], [0., -1.0, 0.], sp.color.as_rgba_u32()),
-            ([sp.max_x, sp.min_y, sp.min_z], [0., -1.0, 0.], sp.color.as_rgba_u32()),
+            ([sp.max_x, sp.min_y, sp.max_z], [0., -1.0, 0.], sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.min_y, sp.max_z], [0., -1.0, 0.], sp.color.as_rgba_f32().into()),
+            ([sp.min_x, sp.min_y, sp.min_z], [0., -1.0, 0.], sp.color.as_rgba_f32().into()),
+            ([sp.max_x, sp.min_y, sp.min_z], [0., -1.0, 0.], sp.color.as_rgba_f32().into()),
         ];
 
         let mut positions = Vec::with_capacity(24);
@@ -251,9 +251,9 @@ impl Default for VoxelsBundle {
     }
 }
 
-#[derive(Debug, Clone, TypeUuid)]
+#[derive(AsBindGroup, Debug, Clone, TypeUuid)]
 #[uuid = "9c3b191e-c141-11ec-bf25-02a179e5df2c"]
-pub struct VoxelsMaterial;
+pub struct VoxelsMaterial{}
 
 #[derive(Clone)]
 pub struct GpuVoxelsMaterial {
@@ -277,7 +277,7 @@ fn generate_voxels(
     >,
 ) {
     for (_entity, voxels, visibility, mesh_handle) in voxels.iter_mut() {
-        if !visibility.is_visible {
+        if !visibility.is_visible() {
             continue;
         }
         let voxel_mesh = merge(&voxels.voxels);
@@ -311,29 +311,30 @@ impl RenderAsset for VoxelsMaterial {
 }
 
 impl Material for VoxelsMaterial {
-    fn vertex_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
-        Some(asset_server.load("shaders/voxels.wgsl"))
+    fn vertex_shader() -> ShaderRef {
+        "shaders/voxels.wgsl".into()
     }
 
-    fn fragment_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
-        Some(asset_server.load("shaders/voxels.wgsl"))
+    fn fragment_shader() -> ShaderRef {
+        "shaders/voxels.wgsl".into()
     }
 
-    fn bind_group(render_asset: &<Self as RenderAsset>::PreparedAsset) -> &BindGroup {
-        &render_asset.bind_group
-    }
+    // fn bind_group(render_asset: &<Self as RenderAsset>::PreparedAsset) -> &BindGroup {
+    //     &render_asset.bind_group
+    // }
 
-    fn bind_group_layout(render_device: &RenderDevice) -> BindGroupLayout {
-        render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("voxels_bind_group_layout"),
-            entries: &[],
-        })
-    }
+    // fn bind_group_layout(render_device: &RenderDevice) -> BindGroupLayout {
+    //     render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+    //         label: Some("voxels_bind_group_layout"),
+    //         entries: &[],
+    //     })
+    // }
 
     fn specialize(
         _pipeline: &MaterialPipeline<Self>,
         descriptor: &mut RenderPipelineDescriptor,
         layout: &MeshVertexBufferLayout,
+        _key: MaterialPipelineKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
         let vertex_layout = layout.get_layout(&[
             Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
